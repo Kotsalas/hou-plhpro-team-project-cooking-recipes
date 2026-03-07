@@ -13,7 +13,7 @@ def seed():
     conn = get_connection()
     cur = conn.cursor()
 
-    # 1️⃣ Δημιουργία συνταγής
+# 1 Δημιουργία συνταγής
     cur.execute("""
         INSERT OR IGNORE INTO recipes (name, category, difficulty, total_minutes)
         VALUES (?, ?, ?, ?)
@@ -26,7 +26,7 @@ def seed():
 
     recipe_id = cur.fetchone()[0]
 
-    # 2️⃣ Υλικά
+# 2 Υλικά
     ingredients = ["Μακαρόνια", "Αλάτι", "Μπέικον", "Αυγά", "Παρμεζάνα", "Πιπέρι"]
     ingredient_ids = {}
 
@@ -40,7 +40,7 @@ def seed():
             VALUES (?, ?)
         """, (recipe_id, ingredient_ids[name]))
 
-    # 3️⃣ Βήματα
+# 3 Βήματα
     steps = [
         (1, "Βράσιμο ζυμαρικών",
          "Βράζουμε τα μακαρόνια σε αλατισμένο νερό", 10,
