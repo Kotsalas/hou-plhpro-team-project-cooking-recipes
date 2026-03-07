@@ -12,6 +12,25 @@ from recipes_service import (
 )
 
 
+# Μετατρέπει συνολικά λεπτά σε μορφή ώρα/ώρες και λεπτά
+def format_time(total_minutes):
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+
+    parts = []
+    if hours == 1:
+        parts.append("1 ώρα")
+    elif hours > 1:
+        parts.append(f"{hours} ώρες")
+
+    if minutes == 1:
+        parts.append("1 λεπτό")
+    elif minutes > 1 or total_minutes == 0:
+        parts.append(f"{minutes} λεπτά")
+
+    return " και ".join(parts)
+
+
 # Εμφανίζει αναλυτικά τα στοιχεία μιας συνταγής
 def show_details(details):
     r = details["recipe"]
@@ -23,7 +42,7 @@ def show_details(details):
     print(f"Όνομα: {r[1]}")
     print(f"Κατηγορία: {r[2]}")
     print(f"Δυσκολία: {r[3]}")
-    print(f"Συνολικός χρόνος: {r[4]} λεπτά")
+    print(f"Συνολικός χρόνος: {format_time(r[4])}")
 
     print("\nΥλικά συνταγής:")
     if details["recipe_ingredients"]:
@@ -35,11 +54,22 @@ def show_details(details):
     print("\nΒήματα:")
     if details["steps"]:
         for s in details["steps"]:
-            print(f"{s['order']}. {s['title']} ({s['minutes']} λεπτά)")
+            print(f"{s['order']}. {s['title']} ({format_time(s['minutes'])})")
             print("   ", s["description"])
             print("   Υλικά:", ", ".join(s["ingredients"]) if s["ingredients"] else "(κανένα)")
     else:
         print(" (δεν υπάρχουν βήματα)")
+
+
+# Εισαγωγή αριθμού με validation
+def input_int(prompt):
+    while True:
+        value = input(prompt).strip()
+        if not value:
+            return 0
+        if value.isdigit():
+            return int(value)
+        print("Πρέπει να δώσεις αριθμό.")
 
 
 # Flow δημιουργίας νέας συνταγής
@@ -47,7 +77,10 @@ def create_flow():
     name = input("Όνομα συνταγής: ").strip()
     category = input("Κατηγορία: ").strip()
     difficulty = input("Δυσκολία (Εύκολη/Μέτρια/Δύσκολη): ").strip()
-    total_minutes = int(input("Συνολικός χρόνος (λεπτά): ").strip())
+
+    hours = input_int("Συνολικές ώρες: ")
+    minutes = input_int("Επιπλέον λεπτά: ")
+    total_minutes = hours * 60 + minutes
 
     recipe_id, created = add_recipe_basic(name, category, difficulty, total_minutes)
 
@@ -76,7 +109,9 @@ def create_flow():
             break
 
         desc = input("Περιγραφή: ").strip()
-        mins = int(input("Διάρκεια (λεπτά): ").strip())
+        step_hours = input_int("Ώρες βήματος: ")
+        step_minutes = input_int("Λεπτά βήματος: ")
+        mins = step_hours * 60 + step_minutes
 
         step_id = add_step(recipe_id, title, desc, mins)
 
@@ -108,12 +143,15 @@ def edit_basic_flow(recipe_id: int):
     new_name = input(f"Όνομα ({r[1]}): ").strip()
     new_category = input(f"Κατηγορία ({r[2]}): ").strip()
     new_difficulty = input(f"Δυσκολία ({r[3]}): ").strip()
-    new_total = input(f"Συνολικός χρόνος λεπτά ({r[4]}): ").strip()
+
+    print(f"Τρέχων συνολικός χρόνος: {format_time(r[4])}")
+    new_hours = input_int("Νέες ώρες: ")
+    new_minutes = input_int("Νέα λεπτά: ")
 
     name = new_name if new_name else r[1]
     category = new_category if new_category else r[2]
     difficulty = new_difficulty if new_difficulty else r[3]
-    total_minutes = int(new_total) if new_total else r[4]
+    total_minutes = new_hours * 60 + new_minutes if new_hours or new_minutes else r[4]
 
     ok, err = update_recipe_basic(recipe_id, name, category, difficulty, total_minutes)
 
@@ -137,9 +175,13 @@ def search_flow():
 
     print("\nΑποτελέσματα:")
     for r in results:
-        print(f"ID: {r[0]} | Όνομα: {r[1]} | Κατηγορία: {r[2]} | Δυσκολία: {r[3]} | Χρόνος: {r[4]} λεπτά")
+        print(
+            f"ID: {r[0]} | Όνομα: {r[1]} | Κατηγορία: {r[2]} | "
+            f"Δυσκολία: {r[3]} | Χρόνος: {format_time(r[4])}"
+        )
 
-    selected_id = int(input("\nΔώσε ID: ").strip())
+    selected_id = input_int("\nΔώσε ID: ")
+
     action = input(
         "Τι θέλεις να κάνεις; (e=εκτέλεση, p=προβολή, d=διαγραφή, u=τροποποίηση): "
     ).strip().lower()
