@@ -42,3 +42,28 @@ python backend/database.py
 Για να προστεθούν ενδεικτικά δεδομένα εκτελέστε:
 
 python backend/seed.py
+
+Για να εκτελέσετε την εφαρμογή μέσω γραμμής εντολών (CLI):
+
+python backend/app_cli.py
+
+## Δομή Project
+
+backend/
+- app_cli.py
+- database.py
+- db.py
+- recipes_service.py
+- search.py
+- seed.py
+
+docs/
+tasks/
+
+README.md
+schema.sql
+
+
+## Σημείωση
+
+Το αρχείο `recipes.db` δημιουργείται τοπικά μετά την εκτέλεση του `database.py` και δεν αποθηκεύεται στο GitHub.
