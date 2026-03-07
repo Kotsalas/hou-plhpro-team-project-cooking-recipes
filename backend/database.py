@@ -25,7 +25,7 @@ def create_tables():
         total_minutes INTEGER NOT NULL,
         UNIQUE(name, category)
     );
-    """)Α
+    """)
 
     # Πίνακας υλικών (ανεξάρτητα υλικά)
     cursor.execute("""
