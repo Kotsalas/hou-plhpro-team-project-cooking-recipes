@@ -1,3 +1,4 @@
+# Εισαγωγή συναρτήσεων από το service layer
 from recipes_service import (
     search_recipes,
     get_recipe_details,
@@ -11,6 +12,7 @@ from recipes_service import (
 )
 
 
+# Εμφανίζει αναλυτικά τα στοιχεία μιας συνταγής
 def show_details(details):
     r = details["recipe"]
 
@@ -40,6 +42,7 @@ def show_details(details):
         print(" (δεν υπάρχουν βήματα)")
 
 
+# Flow δημιουργίας νέας συνταγής
 def create_flow():
     name = input("Όνομα συνταγής: ").strip()
     category = input("Κατηγορία: ").strip()
@@ -86,12 +89,13 @@ def create_flow():
             ok = add_ingredient_to_step(step_id, ing)
             print("     + προστέθηκε" if ok else "     (υπήρχε ήδη)")
 
-    print("\n✅ Ολοκληρώθηκε η καταχώρηση.")
+    print("\nΟλοκληρώθηκε η καταχώρηση.")
     details = get_recipe_details(recipe_id)
     if details:
         show_details(details)
 
 
+# Flow τροποποίησης βασικών στοιχείων συνταγής
 def edit_basic_flow(recipe_id: int):
     details = get_recipe_details(recipe_id)
     if details is None:
@@ -114,14 +118,15 @@ def edit_basic_flow(recipe_id: int):
     ok, err = update_recipe_basic(recipe_id, name, category, difficulty, total_minutes)
 
     if ok:
-        print("✅ Η συνταγή ενημερώθηκε.")
+        print("Η συνταγή ενημερώθηκε.")
     else:
         if err:
-            print("❌ Αποτυχία ενημέρωσης:", err)
+            print("Αποτυχία ενημέρωσης:", err)
         else:
             print("Δεν βρέθηκε συνταγή.")
 
 
+# Flow αναζήτησης συνταγών
 def search_flow():
     term = input("Δώσε όνομα ή κατηγορία για αναζήτηση: ").strip()
     results = search_recipes(term)
@@ -164,6 +169,7 @@ def search_flow():
         print("Μη έγκυρη επιλογή.")
 
 
+# Κεντρικό μενού της εφαρμογής CLI
 if __name__ == "__main__":
     while True:
         print("\n==============================")
@@ -178,7 +184,6 @@ if __name__ == "__main__":
         if choice == "1":
             create_flow()
         elif choice == "2":
-
             search_flow()
         elif choice == "0":
             print("Έξοδος από το πρόγραμμα.")

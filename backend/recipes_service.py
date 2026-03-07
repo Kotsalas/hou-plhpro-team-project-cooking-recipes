@@ -1,14 +1,16 @@
 from backend.db import get_connection
 
 
-# ---------- Helpers ----------
+# Βοηθητική συνάρτηση που βρίσκει υλικό ή το δημιουργεί αν δεν υπάρχει
 def _get_or_create_ingredient(cur, name: str) -> int:
     name = name.strip()
+
     if not name:
         raise ValueError("Κενό όνομα υλικού.")
 
     cur.execute("SELECT id FROM ingredients WHERE name = ?", (name,))
     row = cur.fetchone()
+
     if row:
         return row[0]
 
@@ -16,9 +18,10 @@ def _get_or_create_ingredient(cur, name: str) -> int:
     return cur.lastrowid
 
 
-# ---------- Search / Details ----------
+# Αναζήτηση συνταγών με βάση όνομα ή κατηγορία
 def search_recipes(keyword: str):
     kw = f"%{keyword.strip()}%"
+
     conn = get_connection()
     cur = conn.cursor()
 
@@ -34,6 +37,7 @@ def search_recipes(keyword: str):
     return rows
 
 
+# Επιστρέφει όλα τα στοιχεία μιας συνταγής
 def get_recipe_details(recipe_id: int):
     conn = get_connection()
     cur = conn.cursor()
@@ -67,6 +71,7 @@ def get_recipe_details(recipe_id: int):
     step_rows = cur.fetchall()
 
     steps = []
+
     for step_id, step_order, title, description, duration_minutes in step_rows:
         cur.execute("""
             SELECT i.name
@@ -87,6 +92,7 @@ def get_recipe_details(recipe_id: int):
         })
 
     conn.close()
+
     return {
         "recipe": recipe,
         "recipe_ingredients": recipe_ingredients,
@@ -94,13 +100,11 @@ def get_recipe_details(recipe_id: int):
     }
 
 
-# ---------- Create (basic recipe) ----------
+# Προσθέτει νέα συνταγή με τα βασικά στοιχεία
+# Επιστρέφει (recipe_id, created)
+# created=True αν δημιουργήθηκε νέα συνταγή
+# created=False αν υπήρχε ήδη
 def add_recipe_basic(name: str, category: str, difficulty: str, total_minutes: int):
-    """
-    Επιστρέφει (recipe_id, created)
-      created=True  -> δημιουργήθηκε νέα συνταγή
-      created=False -> υπήρχε ήδη (name, category) και επιστρέφουμε το id της
-    """
     name = name.strip()
     category = category.strip()
     difficulty = difficulty.strip()
@@ -128,11 +132,14 @@ def add_recipe_basic(name: str, category: str, difficulty: str, total_minutes: i
     recipe_id = cur.lastrowid
     conn.commit()
     conn.close()
+
     return recipe_id, True
 
 
+# Προσθέτει υλικό στη συνταγή
+# Επιστρέφει True αν προστέθηκε
+# Επιστρέφει False αν υπήρχε ήδη
 def add_ingredient_to_recipe(recipe_id: int, ingredient_name: str) -> bool:
-    """Προσθέτει υλικό στη συνταγή. True αν μπήκε, False αν υπήρχε ήδη."""
     conn = get_connection()
     cur = conn.cursor()
 
@@ -146,11 +153,13 @@ def add_ingredient_to_recipe(recipe_id: int, ingredient_name: str) -> bool:
     inserted = cur.rowcount > 0
     conn.commit()
     conn.close()
+
     return inserted
 
 
+# Προσθέτει νέο βήμα στο τέλος της συνταγής
+# Επιστρέφει το id του βήματος
 def add_step(recipe_id: int, title: str, description: str, duration_minutes: int) -> int:
-    """Προσθέτει νέο βήμα στο τέλος. Επιστρέφει step_id."""
     conn = get_connection()
     cur = conn.cursor()
 
@@ -169,11 +178,14 @@ def add_step(recipe_id: int, title: str, description: str, duration_minutes: int
     step_id = cur.lastrowid
     conn.commit()
     conn.close()
+
     return step_id
 
 
+# Προσθέτει υλικό σε συγκεκριμένο βήμα
+# Επιστρέφει True αν προστέθηκε
+# Επιστρέφει False αν υπήρχε ήδη
 def add_ingredient_to_step(step_id: int, ingredient_name: str) -> bool:
-    """Προσθέτει υλικό σε βήμα. True αν μπήκε, False αν υπήρχε ήδη."""
     conn = get_connection()
     cur = conn.cursor()
 
@@ -187,15 +199,13 @@ def add_ingredient_to_step(step_id: int, ingredient_name: str) -> bool:
     inserted = cur.rowcount > 0
     conn.commit()
     conn.close()
+
     return inserted
 
 
-# ---------- Update basic recipe ----------
+# Ενημερώνει τα βασικά στοιχεία της συνταγής
+# Επιστρέφει (ok, error_msg)
 def update_recipe_basic(recipe_id: int, name: str, category: str, difficulty: str, total_minutes: int):
-    """
-    Ενημερώνει τα βασικά στοιχεία της συνταγής.
-    Επιστρέφει (ok, error_msg)
-    """
     conn = get_connection()
     cur = conn.cursor()
 
@@ -217,9 +227,10 @@ def update_recipe_basic(recipe_id: int, name: str, category: str, difficulty: st
         return False, str(e)
 
 
-# ---------- Run / Delete ----------
+# Εκτελεί τη συνταγή βήμα-βήμα και εμφανίζει την πρόοδο
 def run_recipe(recipe_id: int):
     details = get_recipe_details(recipe_id)
+
     if details is None:
         print("Δεν βρέθηκε συνταγή.")
         return
@@ -240,6 +251,7 @@ def run_recipe(recipe_id: int):
 
     for s in steps:
         progress = 0
+
         if total_minutes > 0:
             progress = int((completed / total_minutes) * 100)
 
@@ -258,6 +270,9 @@ def run_recipe(recipe_id: int):
     print("Τελική πρόοδος: 100%")
 
 
+# Διαγράφει συνταγή με βάση το id
+# Επιστρέφει True αν διαγράφηκε
+# Επιστρέφει False αν δεν βρέθηκε
 def delete_recipe(recipe_id: int) -> bool:
     conn = get_connection()
     cur = conn.cursor()
@@ -267,4 +282,5 @@ def delete_recipe(recipe_id: int) -> bool:
 
     conn.commit()
     conn.close()
+
     return deleted
