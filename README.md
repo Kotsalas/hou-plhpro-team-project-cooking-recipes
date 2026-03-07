@@ -28,8 +28,17 @@
 
 Η δημιουργία των πινάκων γίνεται με το αρχείο:
 
-`backend/database.py`
+backend/database.py
 
 Για την εισαγωγή ενδεικτικών δεδομένων χρησιμοποιείται το script:
 
-`backend/seed.py`
+backend/seed.py
+## Εκτέλεση Εφαρμογής
+
+Για να δημιουργηθεί η βάση δεδομένων εκτελέστε:
+
+python backend/database.py
+
+Για να προστεθούν ενδεικτικά δεδομένα εκτελέστε:
+
+python backend/seed.py
