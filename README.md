@@ -50,13 +50,12 @@ python backend/app_cli.py
 ## Δομή Project
 
 backend/
-- app_cli.py
+
 - database.py
+- seed.py
 - db.py
 - recipes_service.py
-- search.py
-- seed.py
-
+- app_cli.py
 docs/
 tasks/
 
