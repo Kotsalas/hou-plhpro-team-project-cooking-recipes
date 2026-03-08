@@ -33,6 +33,7 @@ backend/database.py
 Για την εισαγωγή ενδεικτικών δεδομένων χρησιμοποιείται το script:
 
 backend/seed.py
+
 ## Εκτέλεση Εφαρμογής
 
 Για να δημιουργηθεί η βάση δεδομένων εκτελέστε:
@@ -50,13 +51,13 @@ python backend/app_cli.py
 ## Δομή Project
 
 backend/
-
 - database.py
 - seed.py
 - db.py
 - recipes_service.py
 - app_cli.py
-docs/
+
+- docs/
 tasks/
 
 README.md
