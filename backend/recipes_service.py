@@ -1,4 +1,4 @@
-from backend.db import get_connection
+from db import get_connection
 
 
 # Βοηθητική συνάρτηση που βρίσκει υλικό ή το δημιουργεί αν δεν υπάρχει
