@@ -28,7 +28,8 @@ class ExecuteRecipeWindow:
         
         self.window = tk.Toplevel(parent)
         self.window.title(f"Εκτέλεση: {self.recipe[1]}")
-        self.window.geometry("600x500")
+        self.window.geometry("700x650")
+        self.window.minsize(650, 560)
         
         main_frame = ttk.Frame(self.window, padding="20")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
@@ -40,7 +41,7 @@ class ExecuteRecipeWindow:
         ttk.Label(main_frame, text=f"Συνολικός χρόνος: {self.format_time(self.total_minutes)}", 
                  font=("Arial", 10)).grid(row=1, column=0, columnspan=3, pady=5)
         
-        # Progress bar
+        # Μπάρα προόδου
         ttk.Label(main_frame, text="Πρόοδος:", 
                  font=("Arial", 10, "bold")).grid(row=2, column=0, sticky=tk.W, pady=10)
         
@@ -63,12 +64,36 @@ class ExecuteRecipeWindow:
         self.step_time.grid(row=1, column=0, sticky=tk.W, pady=5)
         
         ttk.Label(step_frame, text="Υλικά:", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky=tk.W, pady=5)
-        self.step_ingredients = tk.Text(step_frame, width=50, height=4, state='disabled')
-        self.step_ingredients.grid(row=3, column=0, pady=5)
+
+        ingredients_frame = ttk.Frame(step_frame)
+        ingredients_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=5)
+
+        self.step_ingredients = tk.Text(ingredients_frame, width=50, height=4, state='disabled', wrap=tk.WORD)
+        self.step_ingredients.grid(row=0, column=0, sticky=(tk.W, tk.E))
+
+        ingredients_scrollbar = ttk.Scrollbar(
+            ingredients_frame,
+            orient=tk.VERTICAL,
+            command=self.step_ingredients.yview
+        )
+        ingredients_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        self.step_ingredients.configure(yscrollcommand=ingredients_scrollbar.set)
         
         ttk.Label(step_frame, text="Περιγραφή:", font=("Arial", 10, "bold")).grid(row=4, column=0, sticky=tk.W, pady=5)
-        self.step_description = tk.Text(step_frame, width=50, height=6, state='disabled', wrap=tk.WORD)
-        self.step_description.grid(row=5, column=0, pady=5)
+
+        description_frame = ttk.Frame(step_frame)
+        description_frame.grid(row=5, column=0, sticky=(tk.W, tk.E), pady=5)
+
+        self.step_description = tk.Text(description_frame, width=60, height=10, state='disabled', wrap=tk.WORD)
+        self.step_description.grid(row=0, column=0, sticky=(tk.W, tk.E))
+
+        description_scrollbar = ttk.Scrollbar(
+            description_frame,
+            orient=tk.VERTICAL,
+            command=self.step_description.yview
+        )
+        description_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        self.step_description.configure(yscrollcommand=description_scrollbar.set)
         
         # Κουμπιά πλοήγησης
         nav_frame = ttk.Frame(main_frame)
@@ -90,6 +115,10 @@ class ExecuteRecipeWindow:
         self.window.rowconfigure(0, weight=1)
         main_frame.columnconfigure(1, weight=1)
         main_frame.rowconfigure(3, weight=1)
+        step_frame.columnconfigure(0, weight=1)
+        step_frame.rowconfigure(5, minsize=180)
+        ingredients_frame.columnconfigure(0, weight=1)
+        description_frame.columnconfigure(0, weight=1)
         
         # Εμφάνιση πρώτου βήματος
         self.display_current_step()
