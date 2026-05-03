@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT_DIR / "backend"
+GUI_DIR = ROOT_DIR / "gui"
 
 
 def add_backend_to_path():
@@ -13,6 +14,13 @@ def add_backend_to_path():
     backend_path = str(BACKEND_DIR)
     if backend_path not in sys.path:
         sys.path.insert(0, backend_path)
+
+
+def add_gui_to_path():
+    """Προσθέτει το gui στα imports για να φορτώνονται σωστά τα παράθυρα."""
+    gui_path = str(GUI_DIR)
+    if gui_path not in sys.path:
+        sys.path.insert(0, gui_path)
 
 
 def create_database():
@@ -47,7 +55,9 @@ def ask_for_seed():
 
 def run_gui():
     """Εκκινεί την εφαρμογή με γραφικό περιβάλλον."""
-    runpy.run_path(str(ROOT_DIR / "gui" / "app_gui.py"), run_name="__main__")
+    add_backend_to_path()
+    add_gui_to_path()
+    runpy.run_path(str(GUI_DIR / "app_gui.py"), run_name="__main__")
 
 
 def run_cli():
