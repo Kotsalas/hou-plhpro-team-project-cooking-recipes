@@ -102,8 +102,8 @@ def get_recipe_details(recipe_id: int):
 
 # Προσθέτει νέα συνταγή με τα βασικά στοιχεία
 # Επιστρέφει (recipe_id, created)
-# created=True αν δημιουργήθηκε νέα συνταγή
-# created=False αν υπήρχε ήδη
+# δημιουργήθηκε=True αν δημιουργήθηκε νέα συνταγή
+# δημιουργήθηκε=False αν υπήρχε ήδη
 def add_recipe_basic(name: str, category: str, difficulty: str, total_minutes: int):
     name = name.strip()
     category = category.strip()
@@ -203,6 +203,75 @@ def add_ingredient_to_step(step_id: int, ingredient_name: str) -> bool:
     return inserted
 
 
+# Αφαιρεί υλικό από συνταγή χωρίς να διαγράφει το υλικό από τον γενικό πίνακα
+def remove_ingredient_from_recipe(recipe_id: int, ingredient_name: str) -> bool:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        DELETE FROM recipe_ingredients
+        WHERE recipe_id = ?
+          AND ingredient_id = (
+              SELECT id
+              FROM ingredients
+              WHERE name = ?
+          )
+    """, (recipe_id, ingredient_name.strip()))
+
+    removed = cur.rowcount > 0
+    conn.commit()
+    conn.close()
+
+    return removed
+
+
+# Αφαιρεί υλικό από συγκεκριμένο βήμα χωρίς να διαγράφει το υλικό από τον γενικό πίνακα
+def remove_ingredient_from_step(step_id: int, ingredient_name: str) -> bool:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        DELETE FROM step_ingredients
+        WHERE step_id = ?
+          AND ingredient_id = (
+              SELECT id
+              FROM ingredients
+              WHERE name = ?
+          )
+    """, (step_id, ingredient_name.strip()))
+
+    removed = cur.rowcount > 0
+    conn.commit()
+    conn.close()
+
+    return removed
+
+
+# Αντικαθιστά όλα τα υλικά ενός βήματος με τη νέα λίστα
+def replace_step_ingredients(step_id: int, ingredient_names: list[str]) -> bool:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT id FROM steps WHERE id = ?", (step_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return False
+
+    cur.execute("DELETE FROM step_ingredients WHERE step_id = ?", (step_id,))
+
+    for ingredient_name in ingredient_names:
+        ing_id = _get_or_create_ingredient(cur, ingredient_name)
+        cur.execute("""
+            INSERT OR IGNORE INTO step_ingredients (step_id, ingredient_id)
+            VALUES (?, ?)
+        """, (step_id, ing_id))
+
+    conn.commit()
+    conn.close()
+
+    return True
+
+
 # Ενημερώνει τα βασικά στοιχεία της συνταγής
 # Επιστρέφει (ok, error_msg)
 def update_recipe_basic(recipe_id: int, name: str, category: str, difficulty: str, total_minutes: int):
@@ -225,6 +294,59 @@ def update_recipe_basic(recipe_id: int, name: str, category: str, difficulty: st
         conn.rollback()
         conn.close()
         return False, str(e)
+
+
+# Ενημερώνει τα στοιχεία ενός βήματος
+def update_step(step_id: int, title: str, description: str, duration_minutes: int) -> bool:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE steps
+        SET title = ?, description = ?, duration_minutes = ?
+        WHERE id = ?
+    """, (title.strip(), description.strip(), int(duration_minutes), step_id))
+
+    updated = cur.rowcount > 0
+    conn.commit()
+    conn.close()
+
+    return updated
+
+
+# Διαγράφει βήμα και κρατά συνεχόμενη την αρίθμηση των υπόλοιπων βημάτων
+def delete_step(step_id: int) -> bool:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT recipe_id, step_order
+        FROM steps
+        WHERE id = ?
+    """, (step_id,))
+    row = cur.fetchone()
+
+    if row is None:
+        conn.close()
+        return False
+
+    recipe_id, deleted_order = row
+
+    cur.execute("DELETE FROM steps WHERE id = ?", (step_id,))
+    deleted = cur.rowcount > 0
+
+    if deleted:
+        cur.execute("""
+            UPDATE steps
+            SET step_order = step_order - 1
+            WHERE recipe_id = ?
+              AND step_order > ?
+        """, (recipe_id, deleted_order))
+
+    conn.commit()
+    conn.close()
+
+    return deleted
 
 
 # Εκτελεί τη συνταγή βήμα-βήμα και εμφανίζει την πρόοδο
