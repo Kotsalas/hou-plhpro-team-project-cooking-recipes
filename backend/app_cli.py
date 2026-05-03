@@ -72,7 +72,7 @@ def input_int(prompt):
         print("Πρέπει να δώσεις αριθμό.")
 
 
-# Flow δημιουργίας νέας συνταγής
+# Ροή δημιουργίας νέας συνταγής
 def create_flow():
     name = input("Όνομα συνταγής: ").strip()
     category = input("Κατηγορία: ").strip()
@@ -130,7 +130,7 @@ def create_flow():
         show_details(details)
 
 
-# Flow τροποποίησης βασικών στοιχείων συνταγής
+# Ροή τροποποίησης βασικών στοιχείων συνταγής
 def edit_basic_flow(recipe_id: int):
     details = get_recipe_details(recipe_id)
     if details is None:
@@ -164,7 +164,7 @@ def edit_basic_flow(recipe_id: int):
             print("Δεν βρέθηκε συνταγή.")
 
 
-# Flow αναζήτησης συνταγών
+# Ροή αναζήτησης συνταγών
 def search_flow():
     term = input("Δώσε όνομα ή κατηγορία για αναζήτηση: ").strip()
     results = search_recipes(term)

@@ -27,7 +27,7 @@ class RecipesApp:
                          font=("Arial", 16, "bold"))
         title.grid(row=0, column=0, columnspan=3, pady=10)
         
-        # Frame αναζήτησης
+        # Πλαίσιο αναζήτησης
         search_frame = ttk.LabelFrame(main_frame, text="Αναζήτηση Συνταγής", padding="10")
         search_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
@@ -45,7 +45,7 @@ class RecipesApp:
         results_frame = ttk.LabelFrame(main_frame, text="Αποτελέσματα", padding="10")
         results_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
-        # Treeview για τα αποτελέσματα
+        # Πίνακας για τα αποτελέσματα
         columns = ("ID", "Όνομα", "Κατηγορία", "Δυσκολία", "Χρόνος")
         self.tree = ttk.Treeview(results_frame, columns=columns, show="headings", height=15)
         
@@ -56,7 +56,7 @@ class RecipesApp:
         self.tree.column("ID", width=50)
         self.tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        # Scrollbar
+        # Μπάρα κύλισης
         scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.tree.yview)
         scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
         self.tree.configure(yscrollcommand=scrollbar.set)
