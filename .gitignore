@@ -3,3 +3,4 @@
 *.iml
 recipes.db
 __pycache__/
+.vscode
