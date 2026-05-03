@@ -4,7 +4,18 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
-from recipes_service import get_recipe_details, update_recipe_basic
+from recipes_service import (
+    add_ingredient_to_recipe,
+    add_ingredient_to_step,
+    add_step,
+    delete_step,
+    get_recipe_details,
+    remove_ingredient_from_recipe,
+    replace_step_ingredients,
+    update_recipe_basic,
+    update_step,
+)
+from create_recipe_window import StepDialog
 
 
 class RecipeDetailsWindow:
@@ -34,7 +45,7 @@ class RecipeDetailsWindow:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Bind mouse wheel
+        # Σύνδεση ροδέλας ποντικιού
         def _on_mousewheel(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
@@ -45,8 +56,8 @@ class RecipeDetailsWindow:
         recipe = self.details['recipe']
         
         # Τίτλος
-        ttk.Label(main_frame, text=recipe[1], 
-                 font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+        self.title_label = ttk.Label(main_frame, text=recipe[1], font=("Arial", 16, "bold"))
+        self.title_label.grid(row=0, column=0, columnspan=2, pady=10)
         
         # Βασικά στοιχεία
         ttk.Label(main_frame, text="Βασικά Στοιχεία", 
@@ -94,36 +105,42 @@ class RecipeDetailsWindow:
         ttk.Label(main_frame, text="Υλικά Συνταγής", 
                  font=("Arial", 12, "bold")).grid(row=7, column=0, columnspan=2, pady=(20, 10))
         
-        ingredients_text = tk.Text(main_frame, width=50, height=6, state='disabled')
-        ingredients_text.grid(row=8, column=0, columnspan=2, pady=5)
-        
-        if self.details['recipe_ingredients']:
-            ingredients_text.config(state='normal')
-            for ing in self.details['recipe_ingredients']:
-                ingredients_text.insert(tk.END, f"• {ing}\n")
-            ingredients_text.config(state='disabled')
+        ingredient_form = ttk.Frame(main_frame)
+        ingredient_form.grid(row=8, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+
+        self.ingredient_entry = ttk.Entry(ingredient_form, width=40)
+        self.ingredient_entry.grid(row=0, column=0, padx=5)
+        self.ingredient_entry.bind('<Return>', lambda e: self.add_recipe_ingredient())
+
+        ttk.Button(ingredient_form, text="Προσθήκη Υλικού",
+                  command=self.add_recipe_ingredient).grid(row=0, column=1, padx=5)
+
+        self.ingredients_listbox = tk.Listbox(main_frame, width=50, height=6)
+        self.ingredients_listbox.grid(row=9, column=0, columnspan=2, pady=5)
+
+        ttk.Button(main_frame, text="Αφαίρεση Επιλεγμένου Υλικού",
+                  command=self.remove_selected_ingredient).grid(row=10, column=0, columnspan=2, pady=5)
         
         # Βήματα
         ttk.Label(main_frame, text="Βήματα Εκτέλεσης", 
-                 font=("Arial", 12, "bold")).grid(row=9, column=0, columnspan=2, pady=(20, 10))
+                 font=("Arial", 12, "bold")).grid(row=11, column=0, columnspan=2, pady=(20, 10))
         
-        steps_text = tk.Text(main_frame, width=50, height=15, state='disabled')
-        steps_text.grid(row=10, column=0, columnspan=2, pady=5)
-        
-        if self.details['steps']:
-            steps_text.config(state='normal')
-            for step in self.details['steps']:
-                steps_text.insert(tk.END, f"Βήμα {step['order']}: {step['title']}\n", "bold")
-                steps_text.insert(tk.END, f"Χρόνος: {self.format_time(step['minutes'])}\n")
-                if step['ingredients']:
-                    steps_text.insert(tk.END, f"Υλικά: {', '.join(step['ingredients'])}\n")
-                steps_text.insert(tk.END, f"{step['description']}\n\n")
-            steps_text.tag_config("bold", font=("Arial", 10, "bold"))
-            steps_text.config(state='disabled')
+        step_buttons_frame = ttk.Frame(main_frame)
+        step_buttons_frame.grid(row=12, column=0, columnspan=2, pady=5)
+
+        ttk.Button(step_buttons_frame, text="Προσθήκη Βήματος",
+                  command=self.add_step_dialog).grid(row=0, column=0, padx=5)
+        ttk.Button(step_buttons_frame, text="Επεξεργασία Βήματος",
+                  command=self.edit_selected_step).grid(row=0, column=1, padx=5)
+        ttk.Button(step_buttons_frame, text="Διαγραφή Βήματος",
+                  command=self.delete_selected_step).grid(row=0, column=2, padx=5)
+
+        self.steps_listbox = tk.Listbox(main_frame, width=70, height=10)
+        self.steps_listbox.grid(row=13, column=0, columnspan=2, pady=5)
         
         # Κουμπιά
         buttons_frame = ttk.Frame(main_frame)
-        buttons_frame.grid(row=11, column=0, columnspan=2, pady=20)
+        buttons_frame.grid(row=14, column=0, columnspan=2, pady=20)
         
         ttk.Button(buttons_frame, text="Ενημέρωση Βασικών Στοιχείων", 
                   command=self.update_recipe).grid(row=0, column=0, padx=5)
@@ -132,6 +149,8 @@ class RecipeDetailsWindow:
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
+        self.refresh_details()
     
     def format_time(self, total_minutes):
         """Μετατρέπει λεπτά σε μορφή ώρες και λεπτά"""
@@ -169,6 +188,122 @@ class RecipeDetailsWindow:
         
         if ok:
             messagebox.showinfo("Επιτυχία", "Η συνταγή ενημερώθηκε επιτυχώς")
+            self.refresh_details()
             self.callback()
         else:
             messagebox.showerror("Σφάλμα", f"Αποτυχία ενημέρωσης: {err}")
+
+    def refresh_details(self):
+        """Ανανεώνει τα στοιχεία της συνταγής από τη βάση"""
+        self.details = get_recipe_details(self.recipe_id)
+        if not self.details:
+            messagebox.showerror("Σφάλμα", "Δεν βρέθηκε η συνταγή")
+            self.window.destroy()
+            return
+
+        recipe = self.details['recipe']
+        self.title_label.config(text=recipe[1])
+
+        self.ingredients_listbox.delete(0, tk.END)
+        for ingredient in self.details['recipe_ingredients']:
+            self.ingredients_listbox.insert(tk.END, ingredient)
+
+        self.steps_listbox.delete(0, tk.END)
+        for step in self.details['steps']:
+            ingredients = ", ".join(step['ingredients']) if step['ingredients'] else "χωρίς υλικά"
+            step_text = (
+                f"Βήμα {step['order']}: {step['title']} | "
+                f"{self.format_time(step['minutes'])} | {ingredients}"
+            )
+            self.steps_listbox.insert(tk.END, step_text)
+
+    def add_recipe_ingredient(self):
+        """Προσθέτει υλικό στην υπάρχουσα συνταγή"""
+        ingredient = self.ingredient_entry.get().strip()
+        if not ingredient:
+            return
+
+        add_ingredient_to_recipe(self.recipe_id, ingredient)
+        self.ingredient_entry.delete(0, tk.END)
+        self.refresh_details()
+        self.callback()
+
+    def remove_selected_ingredient(self):
+        """Αφαιρεί το επιλεγμένο υλικό από τη συνταγή"""
+        selection = self.ingredients_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Προειδοποίηση", "Παρακαλώ επιλέξτε υλικό")
+            return
+
+        ingredient = self.ingredients_listbox.get(selection[0])
+        remove_ingredient_from_recipe(self.recipe_id, ingredient)
+        self.refresh_details()
+        self.callback()
+
+    def add_step_dialog(self):
+        """Ανοίγει φόρμα για προσθήκη βήματος σε υπάρχουσα συνταγή"""
+        StepDialog(self.window, self.add_step_to_recipe)
+
+    def add_step_to_recipe(self, step_data):
+        """Αποθηκεύει νέο βήμα στην υπάρχουσα συνταγή"""
+        step_id = add_step(
+            self.recipe_id,
+            step_data['title'],
+            step_data['description'],
+            step_data['duration']
+        )
+
+        for ingredient in step_data['ingredients']:
+            add_ingredient_to_step(step_id, ingredient)
+
+        self.refresh_details()
+        self.callback()
+
+    def edit_selected_step(self):
+        """Ανοίγει φόρμα επεξεργασίας για το επιλεγμένο βήμα"""
+        selection = self.steps_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Προειδοποίηση", "Παρακαλώ επιλέξτε βήμα")
+            return
+
+        step = self.details['steps'][selection[0]]
+        StepDialog(
+            self.window,
+            lambda step_data: self.update_selected_step(step['step_id'], step_data),
+            step_data=step,
+            window_title="Επεξεργασία Βήματος",
+            button_text="Αποθήκευση Βήματος"
+        )
+
+    def update_selected_step(self, step_id, step_data):
+        """Ενημερώνει το επιλεγμένο βήμα και τα υλικά του"""
+        step_updated = update_step(
+            step_id,
+            step_data['title'],
+            step_data['description'],
+            step_data['duration']
+        )
+        ingredients_updated = replace_step_ingredients(step_id, step_data['ingredients'])
+
+        if step_updated and ingredients_updated:
+            self.refresh_details()
+            self.callback()
+        else:
+            messagebox.showerror("Σφάλμα", "Αποτυχία ενημέρωσης βήματος")
+
+    def delete_selected_step(self):
+        """Διαγράφει το επιλεγμένο βήμα από τη συνταγή"""
+        selection = self.steps_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Προειδοποίηση", "Παρακαλώ επιλέξτε βήμα")
+            return
+
+        step = self.details['steps'][selection[0]]
+        if not messagebox.askyesno("Επιβεβαίωση", "Να διαγραφεί το επιλεγμένο βήμα;"):
+            return
+
+        if delete_step(step['step_id']):
+            self.refresh_details()
+            self.callback()
+        else:
+            messagebox.showerror("Σφάλμα", "Αποτυχία διαγραφής βήματος")

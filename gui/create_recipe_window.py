@@ -18,7 +18,7 @@ class CreateRecipeWindow:
         self.recipe_ingredients = []
         self.steps = []
         
-        # Canvas με scrollbar
+        # Περιοχή περιεχομένου με μπάρα κύλισης
         canvas = tk.Canvas(self.window)
         scrollbar = ttk.Scrollbar(self.window, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
@@ -31,7 +31,7 @@ class CreateRecipeWindow:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Bind mouse wheel
+        # Σύνδεση ροδέλας ποντικιού
         def _on_mousewheel(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
@@ -194,15 +194,16 @@ class CreateRecipeWindow:
 
 
 class StepDialog:
-    def __init__(self, parent, callback):
+    def __init__(self, parent, callback, step_data=None,
+                 window_title="Προσθήκη Βήματος", button_text="Προσθήκη Βήματος"):
         self.callback = callback
         self.window = tk.Toplevel(parent)
-        self.window.title("Προσθήκη Βήματος")
+        self.window.title(window_title)
         self.window.geometry("500x450")
         
         self.step_ingredients = []
         
-        # Canvas με scrollbar
+        # Περιοχή περιεχομένου με μπάρα κύλισης
         canvas = tk.Canvas(self.window)
         scrollbar = ttk.Scrollbar(self.window, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
@@ -215,7 +216,7 @@ class StepDialog:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Bind mouse wheel
+        # Σύνδεση ροδέλας ποντικιού
         def _on_mousewheel(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
@@ -273,9 +274,27 @@ class StepDialog:
                   command=self.save_step).grid(row=0, column=0, padx=5)
         ttk.Button(buttons_frame, text="Ακύρωση", 
                   command=self.window.destroy).grid(row=0, column=1, padx=5)
+
+        buttons_frame.winfo_children()[0].config(text=button_text)
+
+        if step_data:
+            self.load_step_data(step_data)
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
+    def load_step_data(self, step_data):
+        """Φορτώνει υπάρχον βήμα στη φόρμα για επεξεργασία"""
+        self.title_entry.insert(0, step_data.get('title', ''))
+        self.description_text.insert("1.0", step_data.get('description', ''))
+
+        duration = step_data.get('duration', step_data.get('minutes', 0))
+        self.hours_spin.set(duration // 60)
+        self.minutes_spin.set(duration % 60)
+
+        for ingredient in step_data.get('ingredients', []):
+            self.step_ingredients.append(ingredient)
+            self.ingredients_listbox.insert(tk.END, ingredient)
     
     def add_ingredient(self):
         """Προσθήκη υλικού στο βήμα"""
