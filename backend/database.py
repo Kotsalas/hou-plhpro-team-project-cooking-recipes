@@ -23,6 +23,7 @@ def create_tables():
         category TEXT NOT NULL,
         difficulty TEXT NOT NULL,
         total_minutes INTEGER NOT NULL,
+        #created_At DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(name, category)
     );
     """)
@@ -54,6 +55,8 @@ def create_tables():
     CREATE TABLE IF NOT EXISTS recipe_ingredients (
         recipe_id INTEGER NOT NULL,
         ingredient_id INTEGER NOT NULL,
+        #amount REAL,
+        #unit TEXT,
         PRIMARY KEY (recipe_id, ingredient_id),
         FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
         FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
