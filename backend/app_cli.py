@@ -74,8 +74,8 @@ def input_int(prompt):
 
 # Ροή δημιουργίας νέας συνταγής
 def create_flow():
-    name = input("Όνομα συνταγής: ").strip()
-    category = input("Κατηγορία: ").strip()
+    name = input("Όνομα συνταγής: ").strip() # πρόταση name = input("Όνομα συνταγής: ").strip().title()
+    category = input("Κατηγορία: ").strip() # πρόταση category = input("Κατηγορία: ").strip().title()
     difficulty = input("Δυσκολία (Εύκολη/Μέτρια/Δύσκολη): ").strip()
 
     hours = input_int("Συνολικές ώρες: ")
