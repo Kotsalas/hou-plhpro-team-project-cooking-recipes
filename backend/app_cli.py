@@ -198,25 +198,25 @@ def search_flow():
         "Τι θέλεις να κάνεις; (e=εκτέλεση, p=προβολή, d=διαγραφή, u=τροποποίηση): "
     ).strip().lower()
 
-    if action == "d":
+    if action == "d": # if action in ["d", "δ"]:
         confirm = input("Σίγουρα διαγραφή; (ν/ο): ").strip().lower()
-        if confirm == "ν":
+        if confirm == "ν": #if confirm in ["n", "ν"]:
             ok = delete_recipe(selected_id)
             print("Η συνταγή διαγράφηκε." if ok else "Δεν βρέθηκε συνταγή με αυτό το ID.")
         else:
             print("Ακύρωση διαγραφής.")
 
-    elif action == "e":
+    elif action == "e": # elif action in ["e", "ε"]:
         run_recipe(selected_id)
 
-    elif action == "p":
+    elif action == "p": #elif action in ["p", "π"]:
         details = get_recipe_details(selected_id)
         if details is None:
             print("Μη έγκυρο ID.")
         else:
             show_details(details)
 
-    elif action == "u":
+    elif action == "u":  #elif action in ["u", "υ"]:
         edit_basic_flow(selected_id)
 
     else:
