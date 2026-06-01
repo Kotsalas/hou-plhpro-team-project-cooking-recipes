@@ -49,7 +49,8 @@ def show_details(details):
         for ing in details["recipe_ingredients"]: # for i, ing in enumerate(details["recipe_ingredients"], start=1):
             print(" -", ing) # print(f"{i}. {ing}") ώστε να βγαίνει 1. Αλεύρι 2. Αυγά
     else:
-        print(" (κανένα)")
+        print(" (κανένα)")#print("Δεν έχουν εισαχθεί υλικά σε αυτή τη συνατγή!")
+        # return αν δεν υπάρχουν υλικά δεν έχει νόημα να τρέξουμε τη συνάρτηση  
 
     print("\nΒήματα:")
     if details["steps"]:
@@ -58,8 +59,8 @@ def show_details(details):
             print("   ", s["description"])
             print("   Υλικά:", ", ".join(s["ingredients"]) if s["ingredients"] else "(κανένα)")
     else:
-        print(" (δεν υπάρχουν βήματα)")
-
+        print(" (δεν υπάρχουν βήματα)") #print("Δεν έχουν εισαχθεί βήματα σε αυτή τη συνατγή!")
+        # return αν δεν υπάρχουν βήματα δεν έχει νόημα να τρέξουμε τη συνάρτηση    
 
 # Εισαγωγή αριθμού με validation
 def input_int(prompt):
