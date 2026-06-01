@@ -169,6 +169,17 @@ def edit_basic_flow(recipe_id: int):
 def search_flow():
     term = input("Δώσε όνομα ή κατηγορία για αναζήτηση: ").strip()
     results = search_recipes(term)
+    #def search_flow (term, all_recipes):
+ #   term= term.lower().strip()
+  #  results= []
+    
+   # for r in all_recipes:
+    #    name= r[1].lower()
+     #   category= r[2].lower()
+        
+      #  if term in name or term in category:
+       #     results.append(r)
+    #return results
 
     if not results:
         print("Δεν βρέθηκε καμία συνταγή.")
@@ -180,7 +191,7 @@ def search_flow():
             f"ID: {r[0]} | Όνομα: {r[1]} | Κατηγορία: {r[2]} | "
             f"Δυσκολία: {r[3]} | Χρόνος: {format_time(r[4])}"
         )
-
+     
     selected_id = input_int("\nΔώσε ID: ")
 
     action = input(
