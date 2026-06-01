@@ -242,5 +242,9 @@ if __name__ == "__main__":
         elif choice == "0":
             print("Έξοδος από το πρόγραμμα.")
             break
+            #elif choise =="0":
+#   conf= input("Σίγουρα θέλεις να βγεις; (ν/ο):")
+#   if conf in ["ν","n"]:
+#       print("Αντίο! Καλά μαγειρέματα!")
         else:
             print("Μη έγκυρη επιλογή.")
