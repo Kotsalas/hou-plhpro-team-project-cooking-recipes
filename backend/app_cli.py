@@ -96,7 +96,7 @@ def create_flow():
 
     print("\nΠροσθήκη υλικών συνταγής (Enter κενό για τέλος):")
     while True:
-        ing = input("Υλικό: ").strip()
+        ing = input("Υλικό: ").strip() # ing= input("Υλικό:").strip().title()
         if not ing:
             break
 
