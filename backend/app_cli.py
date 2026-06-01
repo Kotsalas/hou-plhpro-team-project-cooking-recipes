@@ -46,8 +46,8 @@ def show_details(details):
 
     print("\nΥλικά συνταγής:")
     if details["recipe_ingredients"]:
-        for ing in details["recipe_ingredients"]:
-            print(" -", ing)
+        for ing in details["recipe_ingredients"]: # for i, ing in enumerate(details["recipe_ingredients"], start=1):
+            print(" -", ing) # print(f"{i}. {ing}") ώστε να βγαίνει 1. Αλεύρι 2. Αυγά
     else:
         print(" (κανένα)")
 
