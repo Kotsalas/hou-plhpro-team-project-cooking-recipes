@@ -149,7 +149,7 @@ def edit_basic_flow(recipe_id: int):
     new_hours = input_int("Νέες ώρες: ")
     new_minutes = input_int("Νέα λεπτά: ")
 
-    name = new_name if new_name else r[1]
+    name = new_name if new_name else r[1] #name = new_name.title() if new_name else r[1]
     category = new_category if new_category else r[2]
     difficulty = new_difficulty if new_difficulty else r[3]
     total_minutes = new_hours * 60 + new_minutes if new_hours or new_minutes else r[4]
