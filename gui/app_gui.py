@@ -35,6 +35,8 @@ class RecipesApp:
         self.search_entry = ttk.Entry(search_frame, width=40)
         self.search_entry.grid(row=0, column=1, padx=5)
         self.search_entry.bind('<Return>', lambda e: self.search_recipes())
+        #self.search_entry.bind('<KeyRelease>', lambda e: self.search_recipes()), για live search
+        #self.search_entry.bind('<Escape>', lambda e: self.show_all()) καθαρισμός αναζήτησης με escape
         
         ttk.Button(search_frame, text="Αναζήτηση", 
                   command=self.search_recipes).grid(row=0, column=2, padx=5)
@@ -55,6 +57,13 @@ class RecipesApp:
         
         self.tree.column("ID", width=50)
         self.tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        #ορισμός χρωμάτων για τη δυσκολία 
+        # self.tree.tag_configure('Εύκολη', background='#e6fffa')   
+        # self.tree.tag_configure('Μέτρια', background='#fff9db') 
+        # self.tree.tag_configure('Δύσκολη', background='#fff5f5')
+
+        # Άνοιγμα λεπτομερειών με διπλό κλικ πάνω στη συνταγή
+        # self.tree.bind("<Double-1>", lambda e: self.view_details())
         
         # Μπάρα κύλισης
         scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.tree.yview)
